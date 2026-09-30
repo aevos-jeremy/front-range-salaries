@@ -1,0 +1,33 @@
+# ---- Private data: never commit ----
+# Real source files, the production database, and generated reports.
+Source Data/
+local/
+*.sqlite
+*.sqlite3
+*.db
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+*.pdf
+
+# Synthetic or authorized sample files and blank import templates are allowed.
+!sample_data/**
+!templates/**
+!reference_data/**
+
+# ---- Secrets ----
+.env
+.streamlit/secrets.toml
+config.local.toml
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---- Office and OS clutter ----
+~$*
+Thumbs.db
+.DS_Store
