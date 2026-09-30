@@ -1,4 +1,4 @@
-"""Browse approved postings: filters, a pay-range chart with a compare line, and a sortable table."""
+"""Browse approved postings: filters, a sortable table (newest first), and a collapsed pay-over-time view."""
 import altair as alt
 import pandas as pd
 import streamlit as st
@@ -83,7 +83,7 @@ years = c2.multiselect("Year posted", year_options, placeholder="All years")
 levels = c3.multiselect("Level", LEVELS, placeholder="All levels")
 pe = c4.multiselect("PE", PE_OPTIONS + ["Not listed"], placeholder="Any")
 compare = c5.number_input("Compare a salary ($/yr)", min_value=0, step=1000, value=0,
-                          help="Draws a line on the chart and counts how many ranges it falls in.")
+                          help="Counts how many ranges it falls in, and draws a line on the pay-over-time chart.")
 
 view = df.copy()
 if query:
@@ -114,47 +114,59 @@ if not paid.empty:
         m[3].metric(f"${compare:,.0f} is inside", f"{inside} of {len(paid)} ranges",
                     help=f"Below the bottom of {below} ranges.")
 
-# ---- Chart ------------------------------------------------------------------
+# ---- Pay over time (collapsed, so the table comes first) --------------------
 if not paid.empty:
-    st.subheader("Annual pay range by posting")
-    chart_df = paid.assign(
-        label=paid["title"] + " · " + paid["employer"] + " · "
-        + paid["posted_month"].dt.strftime("%b %Y").fillna(""),
-        mid=(paid["annual_min"] + paid["annual_max"]) / 2,
-        level=paid["level"].fillna("Not set"),
-    ).sort_values("mid")
-    # Pad the x range so one or two postings still get a readable scale.
-    lo, hi = chart_df["annual_min"].min(), chart_df["annual_max"].max()
-    if compare:
-        lo, hi = min(lo, compare), max(hi, compare)
-    pad = max((hi - lo) * 0.05, 5000)
-    x_start = (lo - pad) // 5000 * 5000
-    x_scale = alt.Scale(domain=[x_start, hi + pad], nice=False)
-    chart_df["x_start"] = x_start
-    # Each posting's name sits on its own line above its bar, so long names never
-    # squeeze the plot or run into each other.
-    y = alt.Y("label:N", sort=chart_df["label"].tolist(), title=None, axis=None)
-    base = alt.Chart(chart_df).encode(y=y)
-    bars = base.mark_bar(height=12, cornerRadius=6, yOffset=8).encode(
-        x=alt.X("annual_min:Q", title="Annual pay", scale=x_scale,
-                axis=alt.Axis(format="$,.0f", tickCount=6, gridColor="#e6e9ec", orient="top")),
-        x2="annual_max:Q",
-        color=alt.Color("level:N", title="Level",
-                        legend=alt.Legend(orient="top", direction="horizontal"),
-                        scale=alt.Scale(domain=LEVELS + ["Not set"], range=LEVEL_COLORS + ["#97a4ad"])),
-        tooltip=[alt.Tooltip("title:N", title="Posting"), alt.Tooltip("employer:N", title="Employer"),
-                 alt.Tooltip("annual_min:Q", title="From", format="$,.0f"),
-                 alt.Tooltip("annual_max:Q", title="To", format="$,.0f"),
-                 alt.Tooltip("level:N", title="Level")],
-    )
-    names = base.mark_text(align="left", baseline="middle", yOffset=-9, fontSize=12,
-                           color="#39424a").encode(x="x_start:Q", text="label:N")
-    layers = [bars, names]
-    if compare:
-        rule_df = pd.DataFrame({"x": [compare]})
-        layers.append(alt.Chart(rule_df).mark_rule(color="#1f6f8b", strokeDash=[4, 3], size=2)
-                      .encode(x="x:Q"))
-    st.altair_chart(alt.layer(*layers).properties(height=alt.Step(46)), width="stretch")
+    with st.expander("Pay over time: yearly summary and chart"):
+        by_year = paid.assign(year=paid["posted_month"].dt.year,
+                              mid=(paid["annual_min"] + paid["annual_max"]) / 2)
+        summary = by_year.groupby("year").agg(
+            Postings=("title", "size"), low=("annual_min", "median"),
+            high=("annual_max", "median"), Midpoint=("mid", "median"))
+        levels_mid = by_year.pivot_table(index="year", columns="level", values="mid",
+                                         aggfunc="median").reindex(columns=LEVELS)
+        summary = summary.join(levels_mid).sort_index(ascending=False)
+        summary.index = summary.index.astype(int).astype(str)
+        money = st.column_config.NumberColumn(format="$%,.0f")
+        st.markdown("**Median pay by year**")
+        st.dataframe(summary, width="stretch", column_config={
+            "year": st.column_config.TextColumn("Year"),
+            "low": st.column_config.NumberColumn("Typical low", format="$%,.0f"),
+            "high": st.column_config.NumberColumn("Typical high", format="$%,.0f"),
+            "Midpoint": money, **{lv: st.column_config.NumberColumn(f"{lv} midpoint", format="$%,.0f")
+                                  for lv in LEVELS}})
+        st.caption("Medians of the posted ranges. \"None\" means no postings at that "
+                   "level that year. Early years have few postings, so treat them as rough.")
+
+        # One bar per posting, grouped by year and sorted by pay within each year.
+        chart_df = paid.assign(level=paid["level"].fillna("Not set"),
+                               year=paid["posted_month"].dt.year.astype("Int64").astype(str),
+                               mid=(paid["annual_min"] + paid["annual_max"]) / 2)
+        chart_df["slot"] = chart_df.groupby("year")["mid"].rank(method="first")
+        bars = alt.Chart(chart_df).mark_bar(width={"band": 0.75}, cornerRadius=3).encode(
+            x=alt.X("year:O", title=None, axis=alt.Axis(labelAngle=0, labelFontSize=13)),
+            xOffset=alt.XOffset("slot:O", sort="ascending"),
+            y=alt.Y("annual_min:Q", title="Annual pay", scale=alt.Scale(zero=False),
+                    axis=alt.Axis(format="$,.0f", gridColor="#e6e9ec")),
+            y2="annual_max:Q",
+            color=alt.Color("level:N", title="Level",
+                            legend=alt.Legend(orient="top", direction="horizontal"),
+                            scale=alt.Scale(domain=LEVELS + ["Not set"],
+                                            range=LEVEL_COLORS + ["#97a4ad"])),
+            tooltip=[alt.Tooltip("title:N", title="Posting"),
+                     alt.Tooltip("employer:N", title="Employer"),
+                     alt.Tooltip("posted_month:T", title="Posted", format="%b %Y"),
+                     alt.Tooltip("annual_min:Q", title="From", format="$,.0f"),
+                     alt.Tooltip("annual_max:Q", title="To", format="$,.0f"),
+                     alt.Tooltip("level:N", title="Level")],
+        )
+        layers = [bars]
+        if compare:
+            layers.append(alt.Chart(pd.DataFrame({"y": [compare]}))
+                          .mark_rule(color="#1f6f8b", strokeDash=[4, 3], size=2).encode(y="y:Q"))
+        st.markdown("**Each posting's range, by year posted**")
+        st.altair_chart(alt.layer(*layers).properties(height=380), width="stretch")
+        st.caption("Hover a bar to see the posting. The dashed line is the salary you entered "
+                   "to compare.")
 
 # ---- Table ------------------------------------------------------------------
 st.subheader("Postings")
