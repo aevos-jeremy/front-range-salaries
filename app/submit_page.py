@@ -3,7 +3,7 @@ from datetime import date
 
 import streamlit as st
 
-from common import current_user, get_conn
+from common import get_conn, signed_in_email
 from salaries.postings import LEVELS, PE_OPTIONS, DuplicatePosting, Posting, add_posting, validate
 
 st.title("Add a posting")
@@ -47,6 +47,9 @@ with st.form("add_posting", clear_on_submit=False):
     education = b.text_input("Education", key="education", placeholder="Bachelor's in civil engineering")
     notes = st.text_area("Anything else worth knowing", key="notes",
                          placeholder="Bonus, remote days, benefits, how you heard about it")
+    who = None if signed_in_email() else st.text_input(
+        "Your name or email (optional)", key="who",
+        help="Only reviewers see this, in case they have a question about the posting.")
     submitted = st.form_submit_button("Submit for review", type="primary")
 
 if submitted:
@@ -67,7 +70,8 @@ if submitted:
     else:
         conn = get_conn()
         try:
-            add_posting(conn, posting, status="pending", submitted_by=current_user())
+            submitter = signed_in_email() or (who or "").strip() or "anonymous"
+            add_posting(conn, posting, status="pending", submitted_by=submitter)
         except DuplicatePosting:
             st.warning(f"**{title}** at {employer} in {location} is already in the database "
                        "or waiting for review.")

@@ -58,9 +58,13 @@ updates the CASFM postings and never changes anything people submitted.
 
 ## Hosting it on Streamlit Community Cloud
 
-Deploy `app/app.py` from this repository, then paste the three settings above into the
-app's **Secrets**. To collect input from specific people, keep the app private and invite
-them by email under **Share**; their email is then recorded with what they submit.
+Deploy `app/app.py` from this repository and paste the three settings above into
+**Advanced settings > Secrets** (later: the app's menu > Settings > Secrets).
+
+Community Cloud allows one private app per workspace, so this app can run public.
+Nothing secret is in the repository, and anything a visitor submits waits for review.
+Public visitors aren't signed in, so the form asks for an optional name or email and
+reviewers unlock the review page with `ADMIN_PASSWORD`.
 
 ## Tests
 
