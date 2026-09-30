@@ -118,27 +118,35 @@ if not paid.empty:
         mid=(paid["annual_min"] + paid["annual_max"]) / 2,
         level=paid["level"].fillna("Not set"),
     ).sort_values("mid")
-    order = chart_df["label"].tolist()
-    y = alt.Y("label:N", sort=order, title=None, axis=alt.Axis(labelLimit=320, labelOverlap=False))
-    bars = alt.Chart(chart_df).mark_bar(height=10, cornerRadius=5).encode(
-        x=alt.X("annual_min:Q", title="Annual pay", axis=alt.Axis(format="$,.0f"),
-                  scale=alt.Scale(zero=False, nice=True)),
+    # Pad the x range so one or two postings still get a readable scale.
+    lo, hi = chart_df["annual_min"].min(), chart_df["annual_max"].max()
+    pad = max((hi - lo) * 0.05, 5000)
+    x_start = (lo - pad) // 5000 * 5000
+    x_scale = alt.Scale(domain=[x_start, hi + pad])
+    chart_df["x_start"] = x_start
+    # Each posting's name sits on its own line above its bar, so long names never
+    # squeeze the plot or run into each other.
+    y = alt.Y("label:N", sort=chart_df["label"].tolist(), title=None, axis=None)
+    base = alt.Chart(chart_df).encode(y=y)
+    bars = base.mark_bar(height=12, cornerRadius=6, yOffset=8).encode(
+        x=alt.X("annual_min:Q", title="Annual pay", axis=alt.Axis(format="$,.0f", tickCount=6, gridColor="#e6e9ec"),
+                scale=x_scale),
         x2="annual_max:Q",
-        y=y,
-        color=alt.Color("level:N", title="Level",
+        color=alt.Color("level:N", title="Level", legend=alt.Legend(orient="top", direction="horizontal"),
                         scale=alt.Scale(domain=LEVELS + ["Not set"], range=LEVEL_COLORS + ["#97a4ad"])),
         tooltip=[alt.Tooltip("title:N", title="Posting"), alt.Tooltip("employer:N", title="Employer"),
                  alt.Tooltip("annual_min:Q", title="From", format="$,.0f"),
                  alt.Tooltip("annual_max:Q", title="To", format="$,.0f"),
                  alt.Tooltip("level:N", title="Level")],
     )
-    layers = [bars]
+    names = base.mark_text(align="left", baseline="middle", yOffset=-9, fontSize=12,
+                           color="#39424a").encode(x="x_start:Q", text="label:N")
+    layers = [bars, names]
     if compare:
         rule_df = pd.DataFrame({"x": [compare]})
         layers.append(alt.Chart(rule_df).mark_rule(color="#1f6f8b", strokeDash=[4, 3], size=2)
                       .encode(x="x:Q"))
-    st.altair_chart(alt.layer(*layers).properties(height=40 * len(chart_df) + 20),
-                    width="stretch")
+    st.altair_chart(alt.layer(*layers).properties(height=alt.Step(46)), width="stretch")
 
 # ---- Table ------------------------------------------------------------------
 st.subheader("Postings")
