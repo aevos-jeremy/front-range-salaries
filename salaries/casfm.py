@@ -13,7 +13,8 @@ SEED_FILE = Path(__file__).resolve().parents[1] / "reference_data" / "casfm_post
 SEED_COLUMNS = ["title", "employer", "location", "url", "posted_month",
                 "pay_min", "pay_max", "pay_period", "years_exp_min", "years_exp_max",
                 "pe_required", "other_licenses", "education", "level", "notes",
-                "summary", "responsibilities", "qualifications", "desired_traits"]
+                "summary", "responsibilities", "qualifications", "desired_traits",
+                "description", "archived_at"]
 DB_COLUMNS = ["posting_key", "source", "annual_min", "annual_max", "status",
               "submitted_by"] + SEED_COLUMNS
 NUMERIC = {"pay_min", "pay_max", "years_exp_min", "years_exp_max"}
@@ -44,6 +45,8 @@ def rows_from_scraper(path):
             "years_exp_min": r["years_exp_min"], "years_exp_max": r["years_exp_max"],
             "pe_required": pe, "other_licenses": licenses if pe == "One option" else others,
             "education": r["education"], "level": r["level"], "notes": r["notes"],
+            "description": r["description"] if "description" in keys else None,
+            "archived_at": r["archived_at"] if "archived_at" in keys else None,
         }
 
 
@@ -82,6 +85,7 @@ def upsert(conn, rows):
                 annual_min=annualize(row["pay_min"], row["pay_period"]),
                 annual_max=annualize(row["pay_max"], row["pay_period"]),
                 posted_month=date.fromisoformat(row["posted_month"]) if row["posted_month"] else None,
+                archived_at=date.fromisoformat(row["archived_at"]) if row.get("archived_at") else None,
             )
             conn.execute(
                 f"INSERT INTO salary_posting ({', '.join(DB_COLUMNS)}) "

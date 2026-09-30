@@ -39,7 +39,8 @@ class Posting:
     responsibilities: str | None = None      # one item per line
     qualifications: str | None = None
     desired_traits: str | None = None
-    description: str | None = None           # full pasted or scraped text
+    description: str | None = None           # full pasted or scraped text, kept as an archive
+    archived_at: date | None = None
 
 
 def posting_key(title, employer, location):
@@ -112,6 +113,8 @@ def add_posting(conn, p, status="pending", submitted_by=None):
                  "summary", "responsibilities", "qualifications", "desired_traits", "description"):
         if isinstance(values[name], str):
             values[name] = values[name].strip() or None
+    if values["description"] and not values["archived_at"]:
+        values["archived_at"] = date.today()
     # Fill whatever wasn't given from the full description text.
     for name, found in extract(values["description"]).items():
         values[name] = values[name] or found

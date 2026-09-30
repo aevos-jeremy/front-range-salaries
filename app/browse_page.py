@@ -46,6 +46,16 @@ def show_details(row):
         notes = row.get("notes")
         if isinstance(notes, str) and notes:
             st.caption(_md(notes))
+        archive = row.get("description")
+        if isinstance(archive, str) and archive.strip():
+            when = row.get("archived_at")
+            label = "Archived posting"
+            if when is not None and not pd.isna(when):
+                label += f" (saved {pd.Timestamp(when):%b %d, %Y})"
+            with st.expander(label):
+                st.caption("The posting's text as it read when saved, kept in case the link "
+                           "stops working.")
+                st.text(archive)
 
 
 LEVEL_COLORS = ["#3b8f6b", "#1f6f8b", "#6a4fa3", "#b0493a"]   # Entry, Mid, Senior, Lead

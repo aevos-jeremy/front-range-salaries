@@ -39,3 +39,4 @@ ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS responsibilities TEXT;
 ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS qualifications TEXT;
 ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS desired_traits TEXT;
 ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS archived_at DATE;  -- when description was captured

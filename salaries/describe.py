@@ -10,7 +10,9 @@ SECTIONS = [
     ("qualifications", r"qualif|requirement|what you bring|must have|minimum|education|who you are|^(skills|knowledge|qualifications)\b"),
     ("responsibilities", r"responsib|duties|what you.ll do|day in the life|essential functions|the role|job description|what you will do|key tasks"),
 ]
-OTHER_HEADING = r"benefit|compensation|salary|pay range|about (us|the company)|how to apply|equal opportunity|perks|why (join|work)"
+OTHER_HEADING = (r"benefit|compensation|salary|pay range|about\b|how to apply|to apply|how we|"
+                 r"equal opportunity|perks|why (join|work)|physical|working conditions|"
+                 r"additional information|location|work environment|travel")
 BULLET = re.compile(r"^\s*(?:[-•*·▪◦●–]|\d+[.)])\s*")
 MAX_ITEMS = 12
 
@@ -24,6 +26,8 @@ def _heading(line):
         return None
     # The keyword has to lead the line, so "HEC-RAS experience a plus" stays a bullet.
     low = " ".join(words[:5]).lower()
+    if re.match(OTHER_HEADING, low):
+        return "other"
     for name, pattern in SECTIONS:
         if re.search(pattern, low):
             return name
@@ -65,7 +69,10 @@ def extract(text):
             continue
         if current:
             items = found.setdefault(current, [])
-            if len(items) < MAX_ITEMS and len(line.strip()) > 3:
+            text = line.strip()
+            if text.startswith("(") and text.endswith(")"):
+                continue  # an editor's note, not part of the posting
+            if len(items) < MAX_ITEMS and len(text) > 3:
                 items.append(_clean(line))
     for name, items in found.items():
         if items and name in out:
