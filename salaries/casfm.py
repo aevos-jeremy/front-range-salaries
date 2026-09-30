@@ -14,8 +14,8 @@ SEED_COLUMNS = ["title", "employer", "location", "url", "posted_month",
                 "pay_min", "pay_max", "pay_period", "years_exp_min", "years_exp_max",
                 "pe_required", "other_licenses", "education", "level", "notes",
                 "summary", "responsibilities", "qualifications", "desired_traits",
-                "description", "archived_at"]
-DB_COLUMNS = ["posting_key", "source", "annual_min", "annual_max", "status",
+                "description", "archived_at", "source"]
+DB_COLUMNS = ["posting_key", "annual_min", "annual_max", "status",
               "submitted_by"] + SEED_COLUMNS
 NUMERIC = {"pay_min", "pay_max", "years_exp_min", "years_exp_max"}
 
@@ -47,6 +47,9 @@ def rows_from_scraper(path):
             "education": r["education"], "level": r["level"], "notes": r["notes"],
             "description": r["description"] if "description" in keys else None,
             "archived_at": r["archived_at"] if "archived_at" in keys else None,
+            # CASFM for the live board; older postings Jeremy logged by hand say where
+            # they came from.
+            "source": r["source"] or "CASFM",
         }
 
 
@@ -71,7 +74,7 @@ def rows_from_seed(path=SEED_FILE):
 
 
 def upsert(conn, rows):
-    """Insert CASFM postings as approved, or refresh ones already loaded from CASFM.
+    """Insert seed postings as approved, or refresh ones already loaded from the seed.
     Never changes postings people submitted."""
     keep = {"posting_key", "status", "submitted_by", "posted_month"}
     updates = ", ".join(f"{c}=EXCLUDED.{c}" for c in DB_COLUMNS if c not in keep)
@@ -81,7 +84,7 @@ def upsert(conn, rows):
             full = dict(row)
             full.update(
                 posting_key=posting_key(row["title"], row["employer"], row["location"]),
-                source="CASFM", status="approved", submitted_by="CASFM scraper",
+                source=row.get("source") or "CASFM", status="approved", submitted_by="CASFM scraper",
                 annual_min=annualize(row["pay_min"], row["pay_period"]),
                 annual_max=annualize(row["pay_max"], row["pay_period"]),
                 posted_month=date.fromisoformat(row["posted_month"]) if row["posted_month"] else None,
@@ -91,7 +94,7 @@ def upsert(conn, rows):
                 f"INSERT INTO salary_posting ({', '.join(DB_COLUMNS)}) "
                 f"VALUES ({', '.join('%s' for _ in DB_COLUMNS)}) "
                 f"ON CONFLICT (posting_key) DO UPDATE SET {updates} "
-                "WHERE salary_posting.source = 'CASFM'",
+                "WHERE salary_posting.submitted_by = 'CASFM scraper'",
                 [full[c] for c in DB_COLUMNS])
             n += 1
     return n

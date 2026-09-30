@@ -76,17 +76,21 @@ if df.empty:
     st.stop()
 
 # ---- Filters ----------------------------------------------------------------
-c1, c2, c3, c4 = st.columns([2, 2, 2, 1.4])
+c1, c2, c3, c4, c5 = st.columns([2, 1.6, 1.6, 1.6, 1.4])
 query = c1.text_input("Search", placeholder="Title, employer, city")
-levels = c2.multiselect("Level", LEVELS, placeholder="All levels")
-pe = c3.multiselect("PE", PE_OPTIONS + ["Not listed"], placeholder="Any")
-compare = c4.number_input("Compare a salary ($/yr)", min_value=0, step=1000, value=0,
+year_options = sorted(df["posted_month"].dropna().dt.year.unique().tolist(), reverse=True)
+years = c2.multiselect("Year posted", year_options, placeholder="All years")
+levels = c3.multiselect("Level", LEVELS, placeholder="All levels")
+pe = c4.multiselect("PE", PE_OPTIONS + ["Not listed"], placeholder="Any")
+compare = c5.number_input("Compare a salary ($/yr)", min_value=0, step=1000, value=0,
                           help="Draws a line on the chart and counts how many ranges it falls in.")
 
 view = df.copy()
 if query:
     text = (view["title"] + " " + view["employer"] + " " + view["location"]).str.lower()
     view = view[text.str.contains(query.lower(), regex=False)]
+if years:
+    view = view[view["posted_month"].dt.year.isin(years)]
 if levels:
     view = view[view["level"].isin(levels)]
 if pe:
@@ -114,25 +118,29 @@ if not paid.empty:
 if not paid.empty:
     st.subheader("Annual pay range by posting")
     chart_df = paid.assign(
-        label=paid["title"] + " · " + paid["employer"],
+        label=paid["title"] + " · " + paid["employer"] + " · "
+        + paid["posted_month"].dt.strftime("%b %Y").fillna(""),
         mid=(paid["annual_min"] + paid["annual_max"]) / 2,
         level=paid["level"].fillna("Not set"),
     ).sort_values("mid")
     # Pad the x range so one or two postings still get a readable scale.
     lo, hi = chart_df["annual_min"].min(), chart_df["annual_max"].max()
+    if compare:
+        lo, hi = min(lo, compare), max(hi, compare)
     pad = max((hi - lo) * 0.05, 5000)
     x_start = (lo - pad) // 5000 * 5000
-    x_scale = alt.Scale(domain=[x_start, hi + pad])
+    x_scale = alt.Scale(domain=[x_start, hi + pad], nice=False)
     chart_df["x_start"] = x_start
     # Each posting's name sits on its own line above its bar, so long names never
     # squeeze the plot or run into each other.
     y = alt.Y("label:N", sort=chart_df["label"].tolist(), title=None, axis=None)
     base = alt.Chart(chart_df).encode(y=y)
     bars = base.mark_bar(height=12, cornerRadius=6, yOffset=8).encode(
-        x=alt.X("annual_min:Q", title="Annual pay", axis=alt.Axis(format="$,.0f", tickCount=6, gridColor="#e6e9ec"),
-                scale=x_scale),
+        x=alt.X("annual_min:Q", title="Annual pay", scale=x_scale,
+                axis=alt.Axis(format="$,.0f", tickCount=6, gridColor="#e6e9ec", orient="top")),
         x2="annual_max:Q",
-        color=alt.Color("level:N", title="Level", legend=alt.Legend(orient="top", direction="horizontal"),
+        color=alt.Color("level:N", title="Level",
+                        legend=alt.Legend(orient="top", direction="horizontal"),
                         scale=alt.Scale(domain=LEVELS + ["Not set"], range=LEVEL_COLORS + ["#97a4ad"])),
         tooltip=[alt.Tooltip("title:N", title="Posting"), alt.Tooltip("employer:N", title="Employer"),
                  alt.Tooltip("annual_min:Q", title="From", format="$,.0f"),
