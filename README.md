@@ -47,14 +47,17 @@ streamlit run app/app.py --server.address localhost
 
 On Windows you can double-click `start_app.bat` instead.
 
-## Loading CASFM postings
+## CASFM postings
+
+The app loads `reference_data/casfm_postings.csv` every time it starts, so a new database
+fills itself. To update that file from the CASFM scraper's SQLite file:
 
 ```
 python tools/import_casfm.py path\to\salary.db
 ```
 
-Only postings with a pay range are loaded, and they arrive approved. Running it again
-updates the CASFM postings and never changes anything people submitted.
+Then commit and push the CSV; Streamlit restarts the hosted app and loads it. Only postings
+with a pay range are included. Loading never changes anything people submitted.
 
 ## Hosting it on Streamlit Community Cloud
 

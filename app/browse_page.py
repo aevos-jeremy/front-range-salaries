@@ -86,7 +86,7 @@ if not paid.empty:
         layers.append(alt.Chart(rule_df).mark_rule(color="#1f6f8b", strokeDash=[4, 3], size=2)
                       .encode(x="x:Q"))
     st.altair_chart(alt.layer(*layers).properties(height=40 * len(chart_df) + 20),
-                    use_container_width=True)
+                    width="stretch")
 
 # ---- Table ------------------------------------------------------------------
 st.subheader("Postings")
@@ -107,7 +107,7 @@ table = pd.DataFrame({
     "Link": view["url"],
 })
 st.dataframe(
-    table, hide_index=True, use_container_width=True,
+    table, hide_index=True, width="stretch",
     column_config={
         "Date": st.column_config.DateColumn("Date", format="MMM YYYY",
                                             help="Month posted, or first seen on CASFM"),

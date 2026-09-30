@@ -4,6 +4,7 @@ import getpass
 import streamlit as st
 
 from salaries.config import load_settings
+from salaries.casfm import load_seed
 from salaries.db import connect, init_db
 
 
@@ -13,10 +14,11 @@ def get_settings():
 
 @st.cache_resource(show_spinner="Connecting to the database...")
 def _prepare_database(url):
-    """Create missing tables, once per app start."""
+    """Create missing tables and load the CASFM postings, once per app start."""
     conn = connect(url)
     try:
         init_db(conn)
+        load_seed(conn)
     finally:
         conn.close()
     return True
