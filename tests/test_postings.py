@@ -77,3 +77,19 @@ def test_description_fills_sections(conn):
 def test_typed_sections_beat_extracted(conn):
     add_posting(conn, sample(description="Duties:\n- Pulled from text\n", responsibilities="Typed in"))
     assert load(conn, "pending").iloc[0]["responsibilities"] == "Typed in"
+
+
+def test_seed_reload_drops_renamed_postings(conn):
+    from salaries.casfm import prune, upsert
+    row = dict(title="Engineer (title not recorded)", employer="Rocksol", location="Colorado",
+               url=None, posted_month="2024-11-01", pay_min=95000.0, pay_max=125000.0,
+               pay_period="year", years_exp_min=9.0, years_exp_max=None, pe_required="Required",
+               other_licenses=None, education=None, level="Senior", notes=None, summary=None,
+               responsibilities=None, qualifications=None, desired_traits=None,
+               description=None, archived_at=None, source="CASFM (logged by hand)")
+    upsert(conn, [row])
+    renamed = dict(row, title="Project Engineer")
+    prune(conn, [renamed])
+    upsert(conn, [renamed])
+    titles = [r["title"] for r in conn.execute("SELECT title FROM salary_posting").fetchall()]
+    assert titles == ["Project Engineer"]

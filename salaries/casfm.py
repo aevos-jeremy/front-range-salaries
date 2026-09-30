@@ -100,6 +100,20 @@ def upsert(conn, rows):
     return n
 
 
+def prune(conn, rows):
+    """Remove seed postings that are no longer in the seed, for example after a title
+    is corrected. Postings people submitted are never touched."""
+    keys = [posting_key(r["title"], r["employer"], r["location"]) for r in rows]
+    if not keys:
+        return 0
+    with conn.transaction():
+        cur = conn.execute("DELETE FROM salary_posting WHERE submitted_by = 'CASFM scraper' "
+                           "AND NOT (posting_key = ANY(%s))", (keys,))
+    return cur.rowcount
+
+
 def load_seed(conn):
     """Called at app start: loads reference_data/casfm_postings.csv. Safe to repeat."""
-    return upsert(conn, rows_from_seed())
+    rows = list(rows_from_seed())
+    prune(conn, rows)
+    return upsert(conn, rows)
