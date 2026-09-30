@@ -5,9 +5,11 @@ along Colorado's Front Range pay, so young engineers can see their market rate.
 
 - **Browse pay**: filter by level and PE requirement, search by title, employer or city,
   and type in a salary to see how many posted ranges it falls inside. Every column in
-  the table sorts, and the filtered table downloads as a CSV.
+  the table sorts, and the filtered table downloads as a CSV. Click a row to see the job's
+  summary, duties, required qualifications and desired traits.
 - **Add a posting**: anyone who can open the app can submit a posting they've seen.
-  Submissions wait for review.
+  Pasting the job description fills in the summary, duties, qualifications and desired
+  traits (`salaries/describe.py`). Submissions wait for review.
 - **Review submissions**: reviewers approve or reject what people submit. Approved
   postings show up on Browse pay right away.
 

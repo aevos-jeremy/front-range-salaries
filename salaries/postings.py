@@ -6,6 +6,8 @@ from datetime import date
 
 import pandas as pd
 
+from salaries.describe import extract
+
 HOURS_PER_YEAR = 2080
 LEVELS = ["Entry", "Mid", "Senior", "Lead"]
 PE_OPTIONS = ["Required", "One option", "Not required"]
@@ -33,6 +35,11 @@ class Posting:
     education: str | None = None
     level: str | None = None
     notes: str | None = None
+    summary: str | None = None
+    responsibilities: str | None = None      # one item per line
+    qualifications: str | None = None
+    desired_traits: str | None = None
+    description: str | None = None           # full pasted or scraped text
 
 
 def posting_key(title, employer, location):
@@ -101,9 +108,13 @@ def add_posting(conn, p, status="pending", submitted_by=None):
     """Insert a posting. Raises DuplicatePosting if it's already there. Returns its id."""
     key = posting_key(p.title, p.employer, p.location)
     values = {f.name: getattr(p, f.name) for f in fields(Posting)}
-    for name in ("title", "employer", "location", "url", "other_licenses", "education", "notes"):
+    for name in ("title", "employer", "location", "url", "other_licenses", "education", "notes",
+                 "summary", "responsibilities", "qualifications", "desired_traits", "description"):
         if isinstance(values[name], str):
             values[name] = values[name].strip() or None
+    # Fill whatever wasn't given from the full description text.
+    for name, found in extract(values["description"]).items():
+        values[name] = values[name] or found
     values["level"] = values["level"] or infer_level(p.title, p.years_exp_min)
     values.update(posting_key=key, status=status, submitted_by=submitted_by,
                   annual_min=annualize(p.pay_min, p.pay_period),

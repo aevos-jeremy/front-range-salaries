@@ -57,3 +57,23 @@ def test_duplicate_is_rejected(conn):
     add_posting(conn, sample())
     with pytest.raises(DuplicatePosting):
         add_posting(conn, sample(title="project  engineer", location="denver, co"))
+
+
+def test_description_fills_sections(conn):
+    text = ("Riverside Engineering is hiring a Project Engineer to design stormwater systems for "
+            "Front Range towns. You will work on projects from planning through construction.\n"
+            "Responsibilities:\n- Design detention ponds\n- Prepare plan sets\n"
+            "Requirements\n- EI certificate\n- Bachelor's in civil engineering\n"
+            "Nice to have\n- HEC-RAS\n"
+            "Benefits\n- 401k\n")
+    add_posting(conn, sample(description=text))
+    row = load(conn, "pending").iloc[0]
+    assert row["summary"].startswith("Riverside Engineering is hiring")
+    assert row["responsibilities"] == "Design detention ponds\nPrepare plan sets"
+    assert row["qualifications"] == "EI certificate\nBachelor's in civil engineering"
+    assert row["desired_traits"] == "HEC-RAS"
+
+
+def test_typed_sections_beat_extracted(conn):
+    add_posting(conn, sample(description="Duties:\n- Pulled from text\n", responsibilities="Typed in"))
+    assert load(conn, "pending").iloc[0]["responsibilities"] == "Typed in"

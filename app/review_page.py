@@ -44,6 +44,15 @@ try:
                 st.caption(" · ".join(x for x in (row.other_licenses, row.education) if x))
             if row.notes:
                 st.caption(row.notes)
+            if row.summary:
+                st.write(row.summary.replace("$", "\\$"))
+            found = [label for field, label in (("responsibilities", "duties"),
+                                                ("qualifications", "required qualifications"),
+                                                ("desired_traits", "desired traits"))
+                     if getattr(row, field)]
+            if row.description:
+                with st.expander("Job description" + (f" (found {', '.join(found)})" if found else "")):
+                    st.text(row.description)
             if row.url:
                 st.markdown(f"[Open the posting]({row.url})")
             st.caption(f"Submitted by {row.submitted_by or 'unknown'} on "

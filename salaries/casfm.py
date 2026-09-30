@@ -5,13 +5,15 @@ import sqlite3
 from datetime import date
 from pathlib import Path
 
+from salaries.describe import extract
 from salaries.postings import annualize, pe_from_licenses, posting_key
 
 SEED_FILE = Path(__file__).resolve().parents[1] / "reference_data" / "casfm_postings.csv"
 
 SEED_COLUMNS = ["title", "employer", "location", "url", "posted_month",
                 "pay_min", "pay_max", "pay_period", "years_exp_min", "years_exp_max",
-                "pe_required", "other_licenses", "education", "level", "notes"]
+                "pe_required", "other_licenses", "education", "level", "notes",
+                "summary", "responsibilities", "qualifications", "desired_traits"]
 DB_COLUMNS = ["posting_key", "source", "annual_min", "annual_max", "status",
               "submitted_by"] + SEED_COLUMNS
 NUMERIC = {"pay_min", "pay_max", "years_exp_min", "years_exp_max"}
@@ -27,7 +29,15 @@ def rows_from_scraper(path):
         others = ", ".join(x.strip() for x in (licenses or "").split(",")
                            if x.strip() and not x.strip().startswith("PE")) or None
         first = r["first_seen"]
+        # Details typed in by hand win; otherwise pull them from the page text that
+        # newer scraper runs save.
+        keys = r.keys()
+        details = extract(r["description"] if "description" in keys else None)
+        for name in details:
+            if name in keys and r[name]:
+                details[name] = r[name]
         yield {
+            **details,
             "title": r["title"], "employer": r["employer"], "location": r["location"],
             "url": r["url"], "posted_month": f"{first[:7]}-01" if first else None,
             "pay_min": r["pay_min"], "pay_max": r["pay_max"], "pay_period": r["pay_period"],

@@ -31,3 +31,11 @@ CREATE TABLE IF NOT EXISTS salary_posting (
 );
 
 CREATE INDEX IF NOT EXISTS salary_posting_status ON salary_posting (status);
+
+-- What the job asks for, shown when someone clicks a posting. List columns hold one
+-- item per line. description is the full text the rest was pulled from, when we have it.
+ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS summary TEXT;
+ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS responsibilities TEXT;
+ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS qualifications TEXT;
+ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS desired_traits TEXT;
+ALTER TABLE salary_posting ADD COLUMN IF NOT EXISTS description TEXT;

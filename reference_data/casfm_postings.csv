@@ -1,6 +1,47 @@
-title,employer,location,url,posted_month,pay_min,pay_max,pay_period,years_exp_min,years_exp_max,pe_required,other_licenses,education,level,notes
-Senior Project Manager,ICON Engineering,"Centennial, CO",https://www.iconeng.com/careers/,2026-09-01,110000.0,180000.0,year,10.0,,Required,,Bachelor's (civil/water resources),Senior,5+ yrs as PM; from iconeng.com/careers 2026-09-30
-Civil Sector Leader (PE),3 Rocks Engineering & Surveying,"Colorado Springs, CO",https://www.3rocksengineering.com/civilsectorleaderpe,2026-09-01,130000.0,160000.0,year,10.0,,Required,,,Lead,Base plus performance incentive
-Project Engineer Flood & Drainage,Wood Rodgers,"Denver, CO",https://woodrodgers.pinpointhq.com/en/postings/49f511ae-dc2b-4da5-9350-29bf05c8f4ed,2026-09-01,48.25,59.25,hour,,,,,,Mid,Pay from posting; experience/licenses not shown on page
-Project Engineer,ICON Engineering,"Fort Collins, CO",https://www.iconeng.com/careers,2026-09-01,68000.0,83000.0,year,0.0,2.0,Not required,EI (or within 6 months),Bachelor's or Master's (civil/environmental),Entry,from iconeng.com/careers 2026-09-30
-Project Manager I/II - Drainage,City of Greenwood Village,"Greenwood Village, CO 80111, USA",https://recruiting2.ultipro.com/CIT1031COGV/JobBoard/9ea09993-abbd-4f01-a39a-02c51151a420/OpportunityDetail?opportunityId=19bde0c6-bbb5-4bfc-a78f-990b6fee43eb,2026-09-01,36.2,63.64,hour,0.0,3.0,One option,"PM II: PE, EI, PMP, AICP or Master's",Bachelor's (civil/environmental/traffic),Entry,PM I $36.20-54.11/hr no exp; PM II $42.65-63.64/hr 3 yrs; closes 2026-11-13
+title,employer,location,url,posted_month,pay_min,pay_max,pay_period,years_exp_min,years_exp_max,pe_required,other_licenses,education,level,notes,summary,responsibilities,qualifications,desired_traits
+Senior Project Manager,ICON Engineering,"Centennial, CO",https://www.iconeng.com/careers/,2026-09-01,110000.0,180000.0,year,10.0,,Required,,Bachelor's (civil/water resources),Senior,5+ yrs as PM; from iconeng.com/careers 2026-09-30,"Leads multi-disciplinary teams on hydrologic, hydraulic and floodplain projects while managing client relationships. Looking for genuine enthusiasm for natural resources, watersheds and the communities the projects serve.","Oversee H&H modeling, floodplain studies and design QA/QC
+Manage project scope, schedule, budget and team workload
+Champion client relationships and business development
+Prepare outreach materials and present technical information
+Lead cross-functional teams including surveyors and landscape architects","Bachelor's in civil engineering with water resources emphasis
+PE
+10+ years in water resources engineering, 5+ in project management
+Hybrid work at the Centennial office
+Excellent communication and team collaboration
+EPA SWMM, CUHP, HEC-RAS, AutoCAD Civil 3D, ESRI","Master's in civil engineering (water resources)
+CFM
+MHFD and Denver-area agency experience"
+Civil Sector Leader (PE),3 Rocks Engineering & Surveying,"Colorado Springs, CO",https://www.3rocksengineering.com/civilsectorleaderpe,2026-09-01,130000.0,160000.0,year,10.0,,Required,,,Lead,Base plus performance incentive,"Leadership and business development role to lead and grow 3 Rocks' civil sector across Southeast Colorado, leading a team of 7.","Own the civil sector growth strategy: client relationships, proposals, representing the firm
+Lead, mentor and develop a team of 7 (3 to 4 direct reports)
+Partner with ownership on the firm's 10-year growth plan","PE in civil engineering, licensed in Colorado
+10+ years of civil experience leading teams
+Proven record winning new work and keeping clients
+Experience managing and developing engineers and PMs
+Strong communicator, comfortable representing the sector publicly","Relationships in Colorado Springs / El Paso County
+Residential and commercial site development and entitlements
+Municipal or CDOT project background
+Interest in long-term leadership with the firm"
+Project Engineer Flood & Drainage,Wood Rodgers,"Denver, CO",https://woodrodgers.pinpointhq.com/en/postings/49f511ae-dc2b-4da5-9350-29bf05c8f4ed,2026-09-01,48.25,59.25,hour,,,,,,Mid,Pay from posting; the posting page shows section headings for duties and qualifications but no text under them,"Full-time, onsite Project Engineer in Wood Rodgers' Water Resources / Flood & Drainage group in Denver.",,,
+Project Engineer,ICON Engineering,"Fort Collins, CO",https://www.iconeng.com/careers,2026-09-01,68000.0,83000.0,year,0.0,2.0,Not required,EI (or within 6 months),Bachelor's or Master's (civil/environmental),Entry,from iconeng.com/careers 2026-09-30,"Entry-level engineer supporting stormwater and floodplain projects through their whole life cycle, from assessment and planning to design, permitting and construction.","Analyze stormwater and flood mitigation infrastructure
+Study watersheds and calculate runoff volumes
+Design drainage systems, detention facilities and stream restoration
+Floodplain studies and FEMA mapping
+Develop construction plans with design teams
+Present technical information to clients","Bachelor's and/or Master's in civil or environmental engineering
+EI, or able to obtain within 6 months
+0 to 2 years of civil or water resources experience
+Willingness to learn new software
+Teamwork and problem solving","HEC-RAS, EPA SWMM, HEC-HMS, CUHP, ArcGIS, AutoCAD
+FEMA floodplain or storm sewer design project experience"
+Project Manager I/II - Drainage,City of Greenwood Village,"Greenwood Village, CO 80111, USA",https://recruiting2.ultipro.com/CIT1031COGV/JobBoard/9ea09993-abbd-4f01-a39a-02c51151a420/OpportunityDetail?opportunityId=19bde0c6-bbb5-4bfc-a78f-990b6fee43eb,2026-09-01,36.2,63.64,hour,0.0,3.0,One option,"PM II: PE, EI, PMP, AICP or Master's",Bachelor's (civil/environmental/traffic),Entry,PM I $36.20-54.11/hr no exp; PM II $42.65-63.64/hr 3 yrs; closes 2026-11-13,"Municipal engineer managing capital improvement projects, mainly drainage plus transportation, parks and traffic, from design through construction. Work includes studies, plan review, AutoCAD design, inspections, contract management and resident coordination.","Engineering studies and cost analyses
+Design calculations, plans, specifications and estimates
+Review drawings for drainage, parks, roads, utilities and traffic
+Field inspections of construction
+Manage capital projects from design to completion
+Work with residents on scopes; present at public meetings
+Keep drainage and water quality compliant with state and federal rules","PM I: Bachelor's in civil, environmental or traffic engineering; no experience needed
+PM II: 3 years of experience plus a PE, EI, Master's, PMP or AICP
+Valid Colorado driver's license","Strong communication and interpersonal skills
+AutoCAD
+Solid grasp of engineering principles
+Project management and municipal budgeting (PM II)"

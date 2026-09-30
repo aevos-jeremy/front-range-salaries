@@ -6,6 +6,48 @@ import streamlit as st
 from common import get_conn
 from salaries.postings import LEVELS, PE_OPTIONS, as_posted_text, experience_text, load
 
+def _md(text):
+    """Escape dollar signs so Streamlit doesn't read a pay range as math."""
+    return str(text).replace("$", "\\$")
+
+
+def _bullets(text):
+    items = [line.strip() for line in str(text).split("\n") if line.strip()]
+    return "\n".join(f"- {_md(i)}" for i in items)
+
+
+def show_details(row):
+    """The panel under the table for the posting someone clicked."""
+    with st.container(border=True):
+        st.subheader(row["title"])
+        where = f"{row['employer']} · {row['location']}"
+        if isinstance(row["url"], str) and row["url"]:
+            where += f" · [Open the posting]({row['url']})"
+        st.markdown(_md(where))
+        facts = [as_posted_text(row["pay_min"], row["pay_max"], row["pay_period"]),
+                 experience_text(row["years_exp_min"], row["years_exp_max"]),
+                 f"PE {row['pe_required'].lower()}" if isinstance(row["pe_required"], str) else None,
+                 row["level"] if isinstance(row["level"], str) else None]
+        st.markdown(_md(" · ".join(f for f in facts if f)))
+        if isinstance(row.get("summary"), str) and row["summary"]:
+            st.markdown(_md(row["summary"]))
+        cols = st.columns(3)
+        shown = False
+        for col, (field, label) in zip(cols, [("responsibilities", "What you'd do"),
+                                               ("qualifications", "Required"),
+                                               ("desired_traits", "Desired traits")]):
+            value = row.get(field)
+            if isinstance(value, str) and value.strip():
+                col.markdown(f"**{label}**\n\n{_bullets(value)}")
+                shown = True
+        if not shown and not (isinstance(row.get("summary"), str) and row["summary"]):
+            st.caption("No description captured for this posting yet. Open the posting "
+                       "for the full text.")
+        notes = row.get("notes")
+        if isinstance(notes, str) and notes:
+            st.caption(_md(notes))
+
+
 LEVEL_COLORS = ["#3b8f6b", "#1f6f8b", "#6a4fa3", "#b0493a"]   # Entry, Mid, Senior, Lead
 
 st.title("Front Range Engineering Pay")
@@ -106,8 +148,9 @@ table = pd.DataFrame({
     "Source": view["source"],
     "Link": view["url"],
 })
-st.dataframe(
-    table, hide_index=True, width="stretch",
+picked = st.dataframe(
+    table, hide_index=True, width="stretch", key="postings_table",
+    on_select="rerun", selection_mode="single-row",
     column_config={
         "Date": st.column_config.DateColumn("Date", format="MMM YYYY",
                                             help="Month posted, or first seen on CASFM"),
@@ -116,7 +159,14 @@ st.dataframe(
         "Link": st.column_config.LinkColumn("Link", display_text="Open"),
     },
 )
-st.caption("Click a column heading to sort. Level is inferred from the job title and experience "
-           "when the posting doesn't say.")
+st.caption("Click a row to see what the job asks for. Click a column heading to sort. Level is "
+           "inferred from the job title and experience when the posting doesn't say.")
+rows = picked.selection.rows if picked is not None else []
+if rows:
+    show_details(view.iloc[rows[0]])
+else:
+    st.info("Select a posting in the table to see its summary, duties, required "
+            "qualifications and desired traits here.")
+
 st.download_button("Download these postings (CSV)", table.to_csv(index=False).encode(),
                    file_name="front_range_engineering_pay.csv", mime="text/csv")

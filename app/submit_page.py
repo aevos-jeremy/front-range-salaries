@@ -45,6 +45,12 @@ with st.form("add_posting", clear_on_submit=False):
     a, b = st.columns(2)
     other = a.text_input("Other licenses or certifications", key="other", placeholder="EI, CFM")
     education = b.text_input("Education", key="education", placeholder="Bachelor's in civil engineering")
+    st.markdown("**The job description**")
+    description = st.text_area(
+        "Paste the job description", key="description", height=200,
+        placeholder="Copy the whole posting from the employer's page and paste it here.",
+        help="The app pulls out a summary, the duties, required qualifications and desired "
+             "traits, which people see when they click the posting. Reviewers can check them.")
     notes = st.text_area("Anything else worth knowing", key="notes",
                          placeholder="Bonus, remote days, benefits, how you heard about it")
     who = None if signed_in_email() else st.text_input(
@@ -62,6 +68,7 @@ if submitted:
         pe_required=None if pe == "Not stated" else pe,
         other_licenses=other or None, education=education or None,
         level=level if level in LEVELS else None, notes=notes or None,
+        description=description or None,
         source="Submitted",
     )
     problems = validate(posting)
