@@ -4,7 +4,7 @@ import getpass
 import streamlit as st
 
 from salaries.config import load_settings
-from salaries.casfm import load_seed
+from salaries.casfm import SEED_FILE, load_seed
 from salaries.db import connect, init_db
 
 
@@ -12,9 +12,17 @@ def get_settings():
     return load_settings()
 
 
-@st.cache_resource(show_spinner="Connecting to the database...")
-def _prepare_database(url):
-    """Create missing tables and load the CASFM postings, once per app start."""
+def _seed_version():
+    try:
+        return SEED_FILE.stat().st_mtime_ns, SEED_FILE.stat().st_size
+    except FileNotFoundError:
+        return None
+
+
+@st.cache_resource(show_spinner="Loading postings...")
+def _prepare_database(url, seed_version):
+    """Create missing tables and load the CASFM postings. Runs once per app start and
+    again whenever the seed file changes, since a push doesn't always restart the app."""
     conn = connect(url)
     try:
         init_db(conn)
@@ -31,7 +39,7 @@ def get_conn():
         st.error("The database is not configured. Add DATABASE_URL to "
                  "`.streamlit/secrets.toml` (or the hosted app's Secrets).")
         st.stop()
-    _prepare_database(url)
+    _prepare_database(url, _seed_version())
     return connect(url)
 
 
